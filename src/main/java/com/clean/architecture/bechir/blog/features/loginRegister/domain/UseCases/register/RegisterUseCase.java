@@ -21,10 +21,15 @@ public class RegisterUseCase implements UseCaseInteractor<RegisterRequest, Regis
     @Override
     public RegisterResponse execute(RegisterRequest params) {
 
-        User addedUser = userRepository.add(params.user);
-        Compte compteToAdd = Compte.builder().login(params.login).password(params.password).user(addedUser).build();
-        compteRepository.add(compteToAdd);
-        return new RegisterResponse(compteToAdd.getLogin());
+        try {
+            User addedUser = userRepository.add(params.user);
+            Compte compteToAdd = Compte.builder().login(params.login).password(params.password).user(addedUser).build();
+            compteRepository.add(compteToAdd);
+            return new RegisterResponse(compteToAdd.getLogin());
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw e;
+        }
 
     }
 

@@ -7,7 +7,8 @@ import com.clean.architecture.bechir.blog.features.loginRegister.domain.entities
 
 public class CompteMapper {
 
-    public static Compte jpaToDomain(CompteJpa compteJpa, UserJpa userJpa) {
+    public static Compte jpaToDomain(CompteJpa compteJpa) {
+        UserJpa userJpa = compteJpa.getUserJpa();
         User user = User.builder().cin(userJpa.getCin()).nom(userJpa.getNom()).prenom(userJpa.getPrenom())
                 .dateNaissance(userJpa.getDateNaissance()).build();
 
@@ -15,10 +16,10 @@ public class CompteMapper {
                 .user(user).build();
     }
 
-    public static CompteJpa domainToEntity(Compte compte) {
+    public static CompteJpa domainToEntity(Compte compte, UserJpa userJpa) {
 
         return CompteJpa.builder().id(compte.getId()).login(compte.getLogin()).password(compte.getPassword())
-                .cinUser(compte.getUser().getCin()).build();
+                .userJpa(userJpa).build();
     }
 
 }

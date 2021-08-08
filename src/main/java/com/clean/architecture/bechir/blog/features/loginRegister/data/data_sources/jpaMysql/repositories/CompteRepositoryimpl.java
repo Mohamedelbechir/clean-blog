@@ -9,6 +9,7 @@ import com.clean.architecture.bechir.blog.features.loginRegister.data.data_sourc
 import com.clean.architecture.bechir.blog.features.loginRegister.data.data_sources.jpaMysql.mapper.CompteMapper;
 import com.clean.architecture.bechir.blog.features.loginRegister.domain.entities.Compte;
 import com.clean.architecture.bechir.blog.features.loginRegister.domain.repositories.CompteRepository;
+import com.clean.architecture.bechir.blog.features.loginRegister.domain.repositories.exceptions.UserNotFoundException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -24,13 +25,11 @@ public class CompteRepositoryimpl implements CompteRepository {
   @Override
   public Optional<Compte> find(String login, String password) {
     Optional<CompteJpa> findedCompte = compteRepositoryJpa.findByLoginAndPassword(login, password);
+
     if (findedCompte.isPresent()) {
       CompteJpa compte = findedCompte.get();
-      String exceptionMessage = "User with cin " + compte.getCinUser() + " not found";
-      UserJpa user = userRepositoryJpa.findByCin(compte.getCinUser())
-          .orElseThrow(() -> new NotFoundException(exceptionMessage));
 
-      return Optional.ofNullable(CompteMapper.jpaToDomain(findedCompte.get(), user));
+      return Optional.ofNullable(CompteMapper.jpaToDomain(findedCompte.get()));
     } else {
       return Optional.empty();
     }
@@ -39,7 +38,10 @@ public class CompteRepositoryimpl implements CompteRepository {
 
   @Override
   public Long add(Compte compte) {
-    CompteJpa addedCompte = compteRepositoryJpa.save(CompteMapper.domainToEntity(compte));
+    Long cin = compte.getUser().getCin();
+    UserJpa userJpa = userRepositoryJpa.findByCin(cin).orElseThrow(() -> new UserNotFoundException(cin));
+
+    CompteJpa addedCompte = compteRepositoryJpa.save(CompteMapper.domainToEntity(compte, userJpa));
     return addedCompte.getId();
   }
 
